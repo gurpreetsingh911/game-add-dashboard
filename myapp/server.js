@@ -45,36 +45,37 @@ const Google_link = page.url();
 // ⭐ Developer name
 const developer = await page.locator('a[href*="dev"]').first().textContent();
 
-console.log("Game Name:", gameTitle);
-console.log("Developer:", developer);
-console.log("Google_link:", Google_link);
+// console.log("Game Name:", gameTitle);
+// console.log("Developer:", developer);
+// console.log("Google_link:", Google_link);
 
-// fetch Dev id
+// fetch Dev id & Locate by text (e.g., the "Website" link on a Play Store page)
 
-const dev_id = await page.getByLabel('See more information on More by').click()
+let dev_href = "N/A";
 
-// Locate by text (e.g., the "Website" link on a Play Store page)
+try {
 
-const Dev_href = await page.page.locator('a:has-text("Visit website")')
+  // get developer page link
+  const devPage = await page.locator('a[href*="/store/apps/dev"]').first().getAttribute("href");
 
-// // OR - const Dev_href = await page.getAttribute('text="Visit website"', 'href');
+  const devUrl = "https://play.google.com" + devPage;
 
-// console.log(Dev_href)
+  console.log("Developer Page:", devUrl);
 
-// let devLink = "N/A"
+  // open developer page
+  await page.goto(devUrl, { waitUntil: "domcontentloaded" });
 
-// if(Dev_href){
+  const websiteLocator = page.getByRole("link", { name: /visit website/i });
 
-// }
+  if (await websiteLocator.count() > 0) {
+    dev_href = await websiteLocator.first().getAttribute("href");
+  }
 
+} catch (err) {
+  dev_href = "N/A";
+}
 
-
-
-
-
-
-
-
+console.log("Developer Website:", dev_href);
 
 
 // 1. opeaning google form
@@ -107,8 +108,8 @@ await page.getByLabel('Any kind of deal expected? ').getByText('CPI', { exact: t
 
 // 3. Launch timeframe -> add todays data
     //For added Current date in Launch timeframe
-     
-  let Launch_Timeframe = await page.locator("div[class='rFrNMe k3kHxc RdH0ib yqQS1 zKHdkd u3bW4e'] input[type='text']")
+        
+  let Launch_Timeframe = await page.getByLabel(`Launch timeframe`);
 
   let CurrentDate = new Date();
 
@@ -146,9 +147,12 @@ await page.getByLabel('ONLY for new launches').getByText('Yes', { exact: true })
 
 //STEP 7 — fill the Fetch dev "Dev_href" website link (if available)
 
+await page.getByLabel('Official forums (game website, FB').fill(dev_href);
 
-await page.getByLabel('Official forums (game website, FB').fill(Dev_href);
+// Step click on submit button
 
+
+await page.getByRole('button', { name: 'submit' }).click(); //
 
 
 //STEP 5 — Submit Form
